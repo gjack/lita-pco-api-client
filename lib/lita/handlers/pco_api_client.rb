@@ -59,7 +59,6 @@ module Lita
       end
 
       def respond_with_start(response)
-        redis.del('token')
         if token.nil?
           respond_with_authorize(response)
         else
