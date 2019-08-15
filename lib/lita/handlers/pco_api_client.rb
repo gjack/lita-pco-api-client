@@ -39,7 +39,14 @@ module Lita
         redis.del('token')
       end
 
-      route(/get\s+started/i, :respond_with_start, command: true)
+      route(
+        /get\s+started/i,
+        :respond_with_start,
+        command: true,
+        help: {
+          'get started' => 'Will redirect to pco to login/authorize if needed or confirm that you are ready to go.'
+          }
+        )
 
       def respond_with_authorize(response)
         response.reply 'You are being redirected to PCO where you will be asked to authorize this app...'
@@ -47,15 +54,16 @@ module Lita
           scope: config.scope,
           redirect_uri: 'http://localhost:8080/auth/complete'
         )
-        
+
         Launchy.open(url)
       end
 
       def respond_with_start(response)
+        redis.del('token')
         if token.nil?
           respond_with_authorize(response)
         else
-          response.reply('all ready to begin')
+          response.reply('You are all ready to go!')
         end
       end
 
@@ -68,9 +76,8 @@ module Lita
         )
 
         redis.set('token', JSON.dump(auth_token.to_hash))
-
-        # TODO: redirect to info page
-        # with response.redirect('info path')
+        # should redirect to some info page
+        response.redirect('https://github.com/gjack/lita-pco-api-client')
       end
 
       Lita.register_handler(self)
