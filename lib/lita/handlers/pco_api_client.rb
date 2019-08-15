@@ -20,7 +20,7 @@ module Lita
       end
 
       def api
-        PCO::API.new(oauth_access_token: token, url: config.api_url)
+        PCO::API.new(oauth_access_token: token.token, url: config.api_url)
       end
 
       def token
@@ -40,6 +40,7 @@ module Lita
       end
 
       route(/authorize/i, :respond_with_authorize, command: true)
+      route(/list\s+approvers/i, :respond_with_approvers, command: true)
 
       def respond_with_authorize(response)
         response.reply 'You are being redirected to PCO where you will be asked to authorize this app...'
@@ -60,10 +61,12 @@ module Lita
         )
 
         redis.set('token', JSON.dump(auth_token.to_hash))
+        response.write(token.token)
 
         # TODO: redirect to info page
         # with response.redirect('info path')
       end
+
       Lita.register_handler(self)
     end
   end
