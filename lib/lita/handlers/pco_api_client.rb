@@ -60,7 +60,9 @@ module Lita
         )
 
         redis.set('token', JSON.dump(auth_token.to_hash))
-        # TODO: redirect somewhere else or respond to user
+
+        # TODO: redirect to info page
+        # with response.redirect('info path')
       end
       Lita.register_handler(self)
     end
