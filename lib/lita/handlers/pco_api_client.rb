@@ -36,11 +36,10 @@ module Lita
         token
       rescue OAuth2::Error
         # our token info is bad, let's start over
-        redis.set('token', nil)
+        redis.del('token')
       end
 
-      route(/authorize/i, :respond_with_authorize, command: true)
-      route(/list\s+approvers/i, :respond_with_approvers, command: true)
+      route(/get\s+started/i, :respond_with_start, command: true)
 
       def respond_with_authorize(response)
         response.reply 'You are being redirected to PCO where you will be asked to authorize this app...'
@@ -48,8 +47,16 @@ module Lita
           scope: config.scope,
           redirect_uri: 'http://localhost:8080/auth/complete'
         )
-
+        
         Launchy.open(url)
+      end
+
+      def respond_with_start(response)
+        if token.nil?
+          respond_with_authorize(response)
+        else
+          response.reply('all ready to begin')
+        end
       end
 
 
@@ -61,7 +68,6 @@ module Lita
         )
 
         redis.set('token', JSON.dump(auth_token.to_hash))
-        response.write(token.token)
 
         # TODO: redirect to info page
         # with response.redirect('info path')
