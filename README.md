@@ -33,6 +33,22 @@ Lita.configure do |config|
 end
 ```
 
+And add this to your handler:
+
+```ruby
+attr_reader :api
+
+def api
+  @api ||=Lita::Handlers::PcoApiClient.new(robot).api
+end
+```
+
+Then you can interact with PCO API:
+
+```ruby
+api.resources.v2.events.get
+```
+
 ## Usage
 
 The handler responds to the `:connected` event by verifying that a valid access token exists and, if it doesn't, attempting to authorize the application.
