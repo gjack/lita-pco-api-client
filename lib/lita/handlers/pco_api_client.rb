@@ -59,6 +59,15 @@ module Lita
           }
         )
 
+      route(
+        /logout/i,
+        :respond_with_logout,
+        command: true,
+        help: {
+          'logout' => 'Invalidates authorization for querying PCO API'
+          }
+        )
+
       def authorize_app
         url = client.auth_code.authorize_url(
           scope: config.scope,
@@ -69,7 +78,7 @@ module Lita
       end
 
       def respond_with_authorize(response)
-        response.reply 'You are being redirected to PCO where you will be asked to authorize this app...'
+        response.reply 'Authorizing app...'
         authorize_app
       end
 
@@ -83,6 +92,13 @@ module Lita
         redis.set('token', JSON.dump(auth_token.to_hash))
         # should redirect to some info page
         response.write("You are all set and ready to go!")
+      end
+
+      def respond_with_logout(response)
+        response.reply('Logging out... You will need to reauthorize to query PCO API')
+        return if token.nil?
+        api.oauth.revoke.post(token: token.token)
+        redis.del('token')
       end
 
       Lita.register_handler(self)
