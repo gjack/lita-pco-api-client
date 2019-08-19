@@ -10,6 +10,7 @@ module Lita
       config :oauth_secret, default: ENV['OAUTH_SECRET']
       config :api_url, default: ENV['API_URL']
       config :scope, default: 'resources'
+      config :host_url, default: ENV['HOST_URL']
 
       TOKEN_EXPIRATION_PADDING = 300
 
@@ -39,44 +40,49 @@ module Lita
         redis.del('token')
       end
 
+      on(:connected) do |payload|
+        target = Source.new(room: "##{payload[:room]}")
+        if token.nil?
+          robot.send_message(target, "You need to authorize the app before you can begin")
+          authorize_app
+        else
+          robot.send_message(target, "App authorized and ready to go!")
+        end
+      end
+
       route(
-        /get\s+started/i,
-        :respond_with_start,
+        /authorize/i,
+        :respond_with_authorize,
         command: true,
         help: {
-          'get started' => 'Will redirect to pco to login/authorize if needed or confirm that you are ready to go.'
+          'authorize' => 'Authorize use of the application'
           }
         )
 
-      def respond_with_authorize(response)
-        response.reply 'You are being redirected to PCO where you will be asked to authorize this app...'
+      def authorize_app
         url = client.auth_code.authorize_url(
           scope: config.scope,
-          redirect_uri: 'http://localhost:8080/auth/complete'
+          redirect_uri: "#{config.host_url}/auth/complete"
         )
 
         Launchy.open(url)
       end
 
-      def respond_with_start(response)
-        if token.nil?
-          respond_with_authorize(response)
-        else
-          response.reply('You are all ready to go!')
-        end
+      def respond_with_authorize(response)
+        response.reply 'You are being redirected to PCO where you will be asked to authorize this app...'
+        authorize_app
       end
-
 
       def respond_with_auth_complete(request, response)
         code = request.params['code']
         auth_token = client.auth_code.get_token(
           request.params['code'],
-          redirect_uri: 'http://localhost:8080/auth/complete'
+          redirect_uri: "#{config.host_url}/auth/complete"
         )
 
         redis.set('token', JSON.dump(auth_token.to_hash))
         # should redirect to some info page
-        response.redirect('https://github.com/gjack/lita-pco-api-client')
+        response.write("You are all set and ready to go!")
       end
 
       Lita.register_handler(self)
