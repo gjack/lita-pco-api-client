@@ -66,7 +66,7 @@ module Lita
       end
 
       def respond_with_authorize(response)
-        response.reply({
+        response.reply(MultiJson.dump({
           "text": "Click the button to login and authorize this app in PCO",
           "attachments": [
             {
@@ -80,7 +80,7 @@ module Lita
               ]
             }
           ]
-        })
+        }))
       end
 
       def respond_with_auth_complete(request, response)
