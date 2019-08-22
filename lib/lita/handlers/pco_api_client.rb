@@ -66,21 +66,20 @@ module Lita
       end
 
       def respond_with_authorize(response)
-        response.reply(MultiJson.dump({
-          "text": "Click the button to login and authorize this app in PCO",
-          "attachments": [
-            {
-              "fallback": "You could authorize if you could see this button",
-              "actions": [
-                {
-                  "type": "button",
-                  "text": "Authorize App",
-                  "url": authorize_app_url
-                }
-              ]
-            }
-          ]
-        }))
+        robot.chat_service.send_attachment(response.message.source.room_object, [
+          {
+            "text": "You will be redirected to login and authorize this app",
+            "color": "#3AA3E3",
+            "attachment_type": "default",
+            "actions": [
+              {
+                "type": "button",
+                "text": "Authorize App",
+                "url": authorize_app_url
+              }
+            ]
+          }
+        ])
       end
 
       def respond_with_auth_complete(request, response)
