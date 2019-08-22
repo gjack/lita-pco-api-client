@@ -40,16 +40,6 @@ module Lita
         redis.del('token')
       end
 
-      # on(:connected) do |payload|
-      #   target = Source.new(room: "##{payload[:room]}")
-      #   if token.nil?
-      #     robot.send_message(target, "You need to authorize the app before you can begin")
-      #     authorize_app
-      #   else
-      #     robot.send_message(target, "App authorized and ready to go!")
-      #   end
-      # end
-
       route(
         /authorize/i,
         :respond_with_authorize,
@@ -68,18 +58,29 @@ module Lita
           }
         )
 
-      def authorize_app
-        url = client.auth_code.authorize_url(
+      def authorize_app_url
+        client.auth_code.authorize_url(
           scope: config.scope,
           redirect_uri: "#{config.host_url}/auth/complete"
         )
-
-        Launchy.open(url)
       end
 
       def respond_with_authorize(response)
-        response.reply 'Authorizing app...'
-        authorize_app
+        response.reply({
+          "text": "Click the button to login and authorize this app in PCO",
+          "attachments": [
+            {
+              "fallback": "You could authorize if you could see this button",
+              "actions": [
+                {
+                  "type": "button",
+                  "text": "Authorize App",
+                  "url": authorize_app_url
+                }
+              ]
+            }
+          ]
+        })
       end
 
       def respond_with_auth_complete(request, response)
