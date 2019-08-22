@@ -66,20 +66,24 @@ module Lita
       end
 
       def respond_with_authorize(response)
-        robot.chat_service.send_attachment(response.message.source.room_object, [
-          {
-            "text": "You will be redirected to login and authorize this app",
-            "color": "#3AA3E3",
-            "attachment_type": "default",
-            "actions": [
-              {
-                "type": "button",
-                "text": "Authorize App",
-                "url": authorize_app_url
-              }
-            ]
-          }
-        ])
+        if token.nil?
+          robot.chat_service.send_attachment(response.message.source.room_object, [
+            {
+              "text": "You will be redirected to login and authorize this app",
+              "color": "#3AA3E3",
+              "attachment_type": "default",
+              "actions": [
+                {
+                  "type": "button",
+                  "text": "Authorize App",
+                  "url": authorize_app_url
+                }
+              ]
+            }
+          ])
+        else
+          response.reply("You are authorized and ready to go!")
+        end
       end
 
       def respond_with_auth_complete(request, response)

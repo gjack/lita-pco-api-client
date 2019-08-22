@@ -51,4 +51,12 @@ api.resources.v2.events.get
 
 ## Usage
 
-The handler responds to the `:connected` event by verifying that a valid access token exists and, if it doesn't, attempting to authorize the application.
+Authorize use of application in PCO:
+
+`> Lita authorize`
+
+If the application has already been authorized, it will reply with a message. If not, it will provide a button that redirects the user to login and authorize the use of the application.
+
+`> Lita logout`
+
+Revokes the authorization token
