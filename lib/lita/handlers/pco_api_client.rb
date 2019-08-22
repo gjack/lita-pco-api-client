@@ -40,15 +40,15 @@ module Lita
         redis.del('token')
       end
 
-      on(:connected) do |payload|
-        target = Source.new(room: "##{payload[:room]}")
-        if token.nil?
-          robot.send_message(target, "You need to authorize the app before you can begin")
-          authorize_app
-        else
-          robot.send_message(target, "App authorized and ready to go!")
-        end
-      end
+      # on(:connected) do |payload|
+      #   target = Source.new(room: "##{payload[:room]}")
+      #   if token.nil?
+      #     robot.send_message(target, "You need to authorize the app before you can begin")
+      #     authorize_app
+      #   else
+      #     robot.send_message(target, "App authorized and ready to go!")
+      #   end
+      # end
 
       route(
         /authorize/i,
